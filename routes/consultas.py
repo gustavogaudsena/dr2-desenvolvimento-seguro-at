@@ -1,18 +1,20 @@
-from fastapi import APIRouter, HTTPException, status, Request
-from models.consultas import Consulta
+from datetime import datetime, timezone
+from fastapi import APIRouter, HTTPException, status
+from models.consultas import Consulta, ConsultaCreate, RespostaConsulta, RespostaConsultas
 import uuid
 consultas_router = APIRouter(prefix="/consultas")
 consultas = dict()  # {id: consulta}
 
 
-@consultas_router.get("/")
+@consultas_router.get("/", response_model=RespostaConsultas)
 async def get_consultas():
     return {
         "data": list(consultas.values()),
     }
 
 
-@consultas_router.get("/{consulta_id}", status_code=status.HTTP_200_OK)
+@consultas_router.get("/{consulta_id}", status_code=status.HTTP_200_OK,
+                      response_model=RespostaConsulta)
 async def get_consulta_by_id(consulta_id: uuid.UUID):
     consulta = consultas.get(consulta_id, None)
     if consulta is None:
@@ -24,9 +26,12 @@ async def get_consulta_by_id(consulta_id: uuid.UUID):
     }
 
 
-@consultas_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_consulta(consulta: Consulta):
-    consulta.id = uuid.uuid4()
+@consultas_router.post("/", status_code=status.HTTP_201_CREATED,
+                       response_model=RespostaConsulta)
+async def create_consulta(dados: ConsultaCreate):
+    consulta = Consulta(id=uuid.uuid4(),
+                        criado_em=datetime.now(timezone.utc),
+                        **dados.model_dump())
     consultas[consulta.id] = consulta
 
     return {
@@ -34,15 +39,15 @@ async def create_consulta(consulta: Consulta):
     }
 
 
-@consultas_router.put("/{consulta_id}", status_code=status.HTTP_200_OK)
-async def update_consulta(consulta_id: uuid.UUID, request: Request):
+@consultas_router.put("/{consulta_id}", status_code=status.HTTP_200_OK,
+                      response_model=RespostaConsulta)
+async def update_consulta(consulta_id: uuid.UUID, dados: ConsultaCreate):
     consulta = consultas.get(consulta_id, None)
     if consulta is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="Consulta não encontrada")
 
-    updated_consulta = await request.json()
-    updated_consulta["id"] = consulta_id
+    updated_consulta = consulta.model_copy(update=dados.model_dump())
     consultas[consulta_id] = updated_consulta
 
     return {

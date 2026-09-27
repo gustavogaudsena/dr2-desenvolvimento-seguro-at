@@ -2,14 +2,30 @@ from datetime import datetime
 from pydantic import BaseModel
 import uuid
 
-class Consulta(BaseModel):
-    id: uuid.UUID | None = None
+
+class ConsultaBase(BaseModel):
     paciente: str
     medico: str
     data: datetime
+    observacoes: str | None = None
+
+
+class ConsultaCreate(ConsultaBase):
+    pass
+
+
+class Consulta(ConsultaBase):
+    id: uuid.UUID
     criado_em: datetime
 
-    class Settings:
-        name = "consultas"
+
+class ConsultaPublica(ConsultaBase):
+    id: uuid.UUID
 
 
+class RespostaConsulta(BaseModel):
+    data: ConsultaPublica
+
+
+class RespostaConsultas(BaseModel):
+    data: list[ConsultaPublica]

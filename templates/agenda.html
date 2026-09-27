@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block titulo %}Agenda do dia {{ dia.strftime("%d/%m/%Y") }}{% endblock %}
+
+{% block conteudo %}
+<h2>Agenda do dia {{ dia.strftime("%d/%m/%Y") }}</h2>
+
+{% if consultas %}
+<table>
+    <thead>
+        <tr>
+            <th>Horário</th>
+            <th>Paciente</th>
+            <th>Médico</th>
+            <th>Observações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for consulta in consultas %}
+        <tr>
+            <td>{{ consulta.data.strftime("%H:%M") }}</td>
+            <td>{{ consulta.paciente }}</td>
+            <td>{{ consulta.medico }}</td>
+            <td>{{ consulta.observacoes or "" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nenhuma consulta agendada para este dia.</p>
+{% endif %}
+{% endblock %}
