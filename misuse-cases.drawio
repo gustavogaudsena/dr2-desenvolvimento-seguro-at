@@ -1,0 +1,84 @@
+<mxfile host="65bd71144e">
+    <diagram name="Misuse Cases" id="misuse-cases-consultas">
+        <mxGraphModel dx="1151" dy="967" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=18;fontStyle=1;" value="Misuse cases — Sistema de Consultas" vertex="1">
+                    <mxGeometry height="30" width="500" x="160" y="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="attacker" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Atacante" vertex="1">
+                    <mxGeometry height="100" width="50" x="55" y="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="m1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#ffffff;" value="Acessar dados&lt;br&gt;de pacientes" vertex="1">
+                    <mxGeometry height="70" width="170" x="250" y="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="m2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#ffffff;" value="Criar consulta falsa" vertex="1">
+                    <mxGeometry height="70" width="170" x="250" y="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="m3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#ffffff;" value="Alterar ou excluir&lt;br&gt;consultas" vertex="1">
+                    <mxGeometry height="70" width="170" x="250" y="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="m4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;fontColor=#ffffff;" value="Indisponibilizar a API" vertex="1">
+                    <mxGeometry height="70" width="170" x="250" y="510" as="geometry"/>
+                </mxCell>
+                <mxCell id="impact1" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;" value="&lt;b&gt;Impacto potencial&lt;/b&gt;&lt;br&gt;Exposição de dados de saúde, violação de privacidade e risco regulatório." vertex="1">
+                    <mxGeometry height="90" width="240" x="500" y="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="impact2" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;" value="&lt;b&gt;Impacto potencial&lt;/b&gt;&lt;br&gt;Agendamentos falsos, conflitos na agenda e uso indevido do nome de pacientes ou médicos." vertex="1">
+                    <mxGeometry height="90" width="240" x="500" y="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="impact3" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;" value="&lt;b&gt;Impacto potencial&lt;/b&gt;&lt;br&gt;Consultas legítimas podem ser modificadas ou apagadas, prejudicando o atendimento." vertex="1">
+                    <mxGeometry height="90" width="240" x="500" y="360" as="geometry"/>
+                </mxCell>
+                <mxCell id="impact4" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;" value="&lt;b&gt;Impacto potencial&lt;/b&gt;&lt;br&gt;Muitas requisições podem consumir memória e deixar o serviço indisponível." vertex="1">
+                    <mxGeometry height="90" width="240" x="500" y="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="a1" edge="1" parent="1" source="attacker" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#000000;" target="m1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="180.06" y="350.06"/>
+                            <mxPoint x="180.06" y="125"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="a2" edge="1" parent="1" source="attacker" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#000000;" target="m2">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="180.06" y="350.06"/>
+                            <mxPoint x="180.06" y="265"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="a3" edge="1" parent="1" source="attacker" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#000000;" target="m3">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="180.06" y="350.06"/>
+                            <mxPoint x="180.06" y="405"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="a4" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#000000;" target="m4">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="180.06" y="545"/>
+                        </Array>
+                        <mxPoint x="180" y="350" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="i1" edge="1" parent="1" source="m1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;dashed=1;strokeColor=#666666;" target="impact1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="i2" edge="1" parent="1" source="m2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;dashed=1;strokeColor=#666666;" target="impact2">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="i3" edge="1" parent="1" source="m3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;dashed=1;strokeColor=#666666;" target="impact3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="i4" edge="1" parent="1" source="m4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;dashed=1;strokeColor=#666666;" target="impact4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
