@@ -1,0 +1,50 @@
+<mxfile host="65bd71144e">
+    <diagram name="DFD - Consultas" id="dfd-consultas">
+        <mxGraphModel dx="1175" dy="967" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=18;fontStyle=1;" value="DFD básico - Sistema de Consultas" vertex="1">
+                    <mxGeometry height="30" width="500" x="160" y="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="user" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Usuário&lt;br&gt;(Cliente da API / Recepção)" vertex="1">
+                    <mxGeometry height="70" width="150" x="50" y="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="server-boundary" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;strokeWidth=2;strokeColor=#FF0000;fillColor=none;verticalAlign=top;align=center;spacingTop=8;spacingLeft=8;fontStyle=1;" value="&lt;span style=&quot;color: rgb(255, 0, 0);&quot;&gt;Servidor: trust boundary&lt;/span&gt;" vertex="1">
+                    <mxGeometry height="430" width="420" x="350" y="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="application" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;" value="Aplicação FastAPI&lt;br&gt;/consultas e /agenda" vertex="1">
+                    <mxGeometry height="100" width="150" x="400" y="245" as="geometry"/>
+                </mxCell>
+                <mxCell id="store" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=0;right=0;fillColor=#ffffff;strokeColor=#000000;" value="Consultas&lt;br&gt;em memória" vertex="1">
+                    <mxGeometry height="90" width="140" x="560" y="420" as="geometry"/>
+                </mxCell>
+                <mxCell id="request" edge="1" parent="1" source="user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#000000;labelBackgroundColor=#ffffff;" target="application" value="Requisição HTTP">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="response" edge="1" parent="1" source="application" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#000000;labelBackgroundColor=#ffffff;" target="user" value="Resposta JSON / HTML">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="475" y="390"/>
+                            <mxPoint x="125" y="390"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="write" edge="1" parent="1" source="application" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#000000;labelBackgroundColor=#ffffff;" target="store" value="Gravar consulta">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="read" edge="1" parent="1" source="store" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#000000;labelBackgroundColor=#ffffff;" target="application" value="Ler consulta">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="690.06" y="200.06"/>
+                            <mxPoint x="475" y="200.06"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="sensitive-data" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;" value="Dados sensíveis: paciente, médico, data e observações" vertex="1">
+                    <mxGeometry height="40" width="400" x="214" y="564" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
