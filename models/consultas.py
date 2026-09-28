@@ -17,6 +17,7 @@ class ConsultaCreate(ConsultaBase):
 class Consulta(ConsultaBase):
     id: uuid.UUID
     criado_em: datetime
+    owner: str
 
 
 class ConsultaPublica(ConsultaBase):

@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from routes.consultas import consultas_router
 from routes.agenda import agenda_router
+from routes.users import user_router
 import uvicorn
 
 app = FastAPI()
 
+app.include_router(user_router)
 app.include_router(consultas_router)
 app.include_router(agenda_router)
 

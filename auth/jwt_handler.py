@@ -1,0 +1,38 @@
+from datetime import datetime, timedelta, timezone
+import os
+import secrets
+
+from fastapi import HTTPException, status
+import jwt
+
+from models.users import Role, User
+
+SECRET_KEY = os.getenv("JWT_SECRET") or secrets.token_urlsafe(32)
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+def create_access_token(user: User, mfa_verified: bool):
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": user.email,
+        "role": user.role.value,
+        "mfa": mfa_verified,
+        "iat": now,
+        "exp": now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    }
+
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_access_token(token: str):
+    try:
+        data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        data["role"] = Role(data["role"])
+        return data
+    except (jwt.InvalidTokenError, KeyError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc

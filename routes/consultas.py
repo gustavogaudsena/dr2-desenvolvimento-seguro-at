@@ -1,25 +1,37 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from auth.authenticate import require_professional
 from models.consultas import Consulta, ConsultaCreate, RespostaConsulta, RespostaConsultas
 import uuid
 consultas_router = APIRouter(prefix="/consultas")
 consultas = dict()  # {id: consulta}
 
 
+def get_owned_consulta(consulta_id: uuid.UUID, user: dict) -> Consulta:
+    consulta = consultas.get(consulta_id, None)
+    if consulta is None or consulta.owner != user["sub"]:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Consulta não encontrada")
+    return consulta
+
+
 @consultas_router.get("/", response_model=RespostaConsultas)
-async def get_consultas():
+async def get_consultas(user: dict = Depends(require_professional)):
     return {
-        "data": list(consultas.values()),
+        "data": [
+            consulta for consulta in consultas.values()
+            if consulta.owner == user["sub"]
+        ],
     }
 
 
 @consultas_router.get("/{consulta_id}", status_code=status.HTTP_200_OK,
                       response_model=RespostaConsulta)
-async def get_consulta_by_id(consulta_id: uuid.UUID):
-    consulta = consultas.get(consulta_id, None)
-    if consulta is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Consulta não encontrada")
+async def get_consulta_by_id(
+    consulta_id: uuid.UUID,
+    user: dict = Depends(require_professional),
+):
+    consulta = get_owned_consulta(consulta_id, user)
 
     return {
         "data": consulta
@@ -28,9 +40,13 @@ async def get_consulta_by_id(consulta_id: uuid.UUID):
 
 @consultas_router.post("/", status_code=status.HTTP_201_CREATED,
                        response_model=RespostaConsulta)
-async def create_consulta(dados: ConsultaCreate):
+async def create_consulta(
+    dados: ConsultaCreate,
+    user: dict = Depends(require_professional),
+):
     consulta = Consulta(id=uuid.uuid4(),
                         criado_em=datetime.now(timezone.utc),
+                        owner=user["sub"],
                         **dados.model_dump())
     consultas[consulta.id] = consulta
 
@@ -41,11 +57,12 @@ async def create_consulta(dados: ConsultaCreate):
 
 @consultas_router.put("/{consulta_id}", status_code=status.HTTP_200_OK,
                       response_model=RespostaConsulta)
-async def update_consulta(consulta_id: uuid.UUID, dados: ConsultaCreate):
-    consulta = consultas.get(consulta_id, None)
-    if consulta is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Consulta não encontrada")
+async def update_consulta(
+    consulta_id: uuid.UUID,
+    dados: ConsultaCreate,
+    user: dict = Depends(require_professional),
+):
+    consulta = get_owned_consulta(consulta_id, user)
 
     updated_consulta = consulta.model_copy(update=dados.model_dump())
     consultas[consulta_id] = updated_consulta
@@ -56,10 +73,10 @@ async def update_consulta(consulta_id: uuid.UUID, dados: ConsultaCreate):
 
 
 @consultas_router.delete("/{consulta_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_consulta(consulta_id: uuid.UUID):
-    consulta = consultas.get(consulta_id, None)
-    if consulta is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Consulta não encontrada")
+async def delete_consulta(
+    consulta_id: uuid.UUID,
+    user: dict = Depends(require_professional),
+):
+    get_owned_consulta(consulta_id, user)
 
     del consultas[consulta_id]
