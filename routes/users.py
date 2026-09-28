@@ -4,9 +4,11 @@ import secrets
 from auth.authenticate import require_admin
 from auth.hash_password import HashPassword
 from auth.jwt_handler import create_access_token
+from database.database import get_session
 from fastapi import APIRouter, Depends, Form, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from models.users import Role, TokenResponse, User, UserCreate
+from sqlmodel import Session
 
 user_router = APIRouter(
     tags=["User"],
@@ -15,46 +17,27 @@ user_router = APIRouter(
 hash_password = HashPassword()
 MFA_CODE = os.getenv("ADMIN_MFA_CODE")
 
-users = {
-    "medico@clinica.com": User(
-        email="medico@clinica.com",
-        name="Dr. João Souza",
-        password="$2b$12$qLf7xLrlpsJF0lprip/wH.ucWswC8PU8cRPgQXVZLtEtRyur1Wo8S",
-        role=Role.PROFISSIONAL_SAUDE,
-    ),
-    "recepcao@clinica.com": User(
-        email="recepcao@clinica.com",
-        name="Recepção",
-        password="$2b$12$BkXXCR1fImf.2z9vmXQxBOsis/2v.6MTyF0A9ArhUJ/HVp6p7B8u.",
-        role=Role.RECEPCIONISTA,
-    ),
-    "admin@clinica.com": User(
-        email="admin@clinica.com",
-        name="Administrador",
-        password="$2b$12$1DZRxH3ZoAKAdb26xXVq1u0xQRql3sXBPO7QgSt3oDka4hv02fsXu",
-        role=Role.ADMINISTRADOR,
-        mfa_enabled=True,
-    ),
-}
-
 
 @user_router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def sign_user_up(
     user: UserCreate,
     _: dict = Depends(require_admin),
+    session: Session = Depends(get_session),
 ) -> dict:
-    if user.email in users:
+    if session.get(User, user.email) is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Já existe um usuário com o e-mail informado."
         )
 
-    users[user.email] = User(
+    new_user = User(
         email=user.email,
         name=user.name,
         password=hash_password.create_hash(user.password),
         role=Role.PROFISSIONAL_SAUDE,
     )
+    session.add(new_user)
+    session.commit()
     return {
         "message": "Usuário criado com sucesso"
     }
@@ -64,8 +47,9 @@ async def sign_user_up(
 async def sign_user_in(
     user: OAuth2PasswordRequestForm = Depends(),
     mfa_code: str | None = Form(default=None),
+    session: Session = Depends(get_session),
 ) -> dict:
-    user_exist = users.get(user.username)
+    user_exist = session.get(User, user.username)
 
     if not user_exist or not hash_password.verify_hash(user.password, user_exist.password):
         raise HTTPException(

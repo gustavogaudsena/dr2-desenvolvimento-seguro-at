@@ -15,12 +15,16 @@ MarkupSafe==3.0.3
 packaging==26.3
 pluggy==1.6.0
 pydantic==2.13.5
+pydantic-settings==2.15.0
 pydantic_core==2.46.5
 Pygments==2.21.0
 PyJWT==2.15.0
 pytest==9.1.1
 python-multipart==0.0.32
+python-dotenv==1.2.3
+SQLAlchemy==2.0.54
 starlette==1.7.0
+sqlmodel==0.0.47
 truststore==0.10.4
 typing-inspection==0.4.4
 typing_extensions==4.16.0

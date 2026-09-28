@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from typing import Annotated
 
 from auth.authenticate import require_horarios_read
@@ -6,8 +6,11 @@ from auth.hash_password import HashPassword
 from auth.jwt_handler import ACCESS_TOKEN_EXPIRE_MINUTES, create_client_access_token
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from database.consultas import consultas
+from sqlmodel import Session, select
+
+from database.database import get_session
 from models.clients import ClientTokenResponse, OAuthClient
+from models.consultas import Consulta
 
 NOME_PATTERN = r"^[A-Za-zÀ-ÖØ-öø-ÿ .'-]+$"
 
@@ -72,11 +75,18 @@ async def get_horarios_disponiveis(
         Query(min_length=2, max_length=100, pattern=NOME_PATTERN),
     ],
     _: dict = Depends(require_horarios_read),
+    session: Session = Depends(get_session),
 ):
+    inicio = datetime.combine(data, time.min)
+    fim = inicio + timedelta(days=1)
+    statement = select(Consulta).where(
+        Consulta.data >= inicio,
+        Consulta.data < fim,
+        Consulta.medico == medico,
+    )
     horarios_ocupados = {
         consulta.data.strftime("%H:%M")
-        for consulta in consultas.values()
-        if consulta.data.date() == data and consulta.medico == medico
+        for consulta in session.exec(statement).all()
     }
     horarios = [
         f"{hora:02d}:00"

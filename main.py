@@ -1,19 +1,34 @@
+from contextlib import asynccontextmanager
+
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session
+
 from auth.middleware_jwt import JWTMiddleware
 from auth.rate_limiter import RateLimiterMiddleware
+from database.database import create_db_and_tables, engine
+from database.seed import seed_users
 from routes.consultas import consultas_router
 from routes.agenda import agenda_router
 from routes.integracao import integracao_router
 from routes.users import user_router
-import uvicorn
 
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://app.clinica.com",
 ]
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    create_db_and_tables()
+    with Session(engine) as session:
+        seed_users(session)
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(JWTMiddleware)
 app.add_middleware(RateLimiterMiddleware)
 app.add_middleware(

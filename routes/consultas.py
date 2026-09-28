@@ -1,20 +1,27 @@
-from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, status
+from sqlmodel import Session, select
+
 from auth.authenticate import require_professional
 from auth.autorizacao import require_owned_consulta
-from database.consultas import consultas
-from models.consultas import Consulta, ConsultaCreate, RespostaConsulta, RespostaConsultas
-import uuid
+from database.database import get_session
+from models.consultas import (
+    Consulta,
+    ConsultaCreate,
+    RespostaConsulta,
+    RespostaConsultas,
+)
+
 consultas_router = APIRouter(prefix="/consultas")
 
 
 @consultas_router.get("/", response_model=RespostaConsultas)
-async def get_consultas(user: dict = Depends(require_professional)):
+async def get_consultas(
+    user: dict = Depends(require_professional),
+    session: Session = Depends(get_session),
+):
+    statement = select(Consulta).where(Consulta.owner == user["sub"])
     return {
-        "data": [
-            consulta for consulta in consultas.values()
-            if consulta.owner == user["sub"]
-        ],
+        "data": session.exec(statement).all(),
     }
 
 
@@ -33,12 +40,15 @@ async def get_consulta_by_id(
 async def create_consulta(
     dados: ConsultaCreate,
     user: dict = Depends(require_professional),
+    session: Session = Depends(get_session),
 ):
-    consulta = Consulta(id=uuid.uuid4(),
-                        criado_em=datetime.now(timezone.utc),
-                        owner=user["sub"],
-                        **dados.model_dump())
-    consultas[consulta.id] = consulta
+    consulta = Consulta(
+        owner=user["sub"],
+        **dados.model_dump(),
+    )
+    session.add(consulta)
+    session.commit()
+    session.refresh(consulta)
 
     return {
         "data": consulta
@@ -48,21 +58,24 @@ async def create_consulta(
 @consultas_router.put("/{consulta_id}", status_code=status.HTTP_200_OK,
                       response_model=RespostaConsulta)
 async def update_consulta(
-    consulta_id: uuid.UUID,
     dados: ConsultaCreate,
     consulta: Consulta = Depends(require_owned_consulta),
+    session: Session = Depends(get_session),
 ):
-    updated_consulta = consulta.model_copy(update=dados.model_dump())
-    consultas[consulta_id] = updated_consulta
+    consulta.sqlmodel_update(dados.model_dump())
+    session.add(consulta)
+    session.commit()
+    session.refresh(consulta)
 
     return {
-        "data": updated_consulta
+        "data": consulta
     }
 
 
 @consultas_router.delete("/{consulta_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_consulta(
-    consulta_id: uuid.UUID,
-    _: Consulta = Depends(require_owned_consulta),
+    consulta: Consulta = Depends(require_owned_consulta),
+    session: Session = Depends(get_session),
 ):
-    del consultas[consulta_id]
+    session.delete(consulta)
+    session.commit()

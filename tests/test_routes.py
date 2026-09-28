@@ -1,6 +1,8 @@
 from datetime import date
 from uuid import UUID, uuid4
-from database.consultas import consultas
+from sqlmodel import Session
+
+from models.consultas import Consulta
 
 NOVA_CONSULTA = {
     "paciente": "Maria Silva",
@@ -107,9 +109,10 @@ def test_criar_consulta_rejeita_campo_extra(client):
     assert response.status_code == 422
 
 
-def test_atualizar_consulta_rejeita_campo_extra(client):
+def test_atualizar_consulta_rejeita_campo_extra(client, session: Session):
     criada = criar_consulta(client)
-    criado_em_original = consultas[UUID(criada["id"])].criado_em
+    consulta = session.get(Consulta, UUID(criada["id"]))
+    criado_em_original = consulta.criado_em
 
     response = client.put(
         f"/consultas/{criada['id']}",
@@ -117,7 +120,8 @@ def test_atualizar_consulta_rejeita_campo_extra(client):
     )
 
     assert response.status_code == 422
-    assert consultas[UUID(criada["id"])].criado_em == criado_em_original
+    session.refresh(consulta)
+    assert consulta.criado_em == criado_em_original
 
 
 def test_agenda_mostra_so_consultas_do_dia_pedido(client):
