@@ -1,5 +1,9 @@
 from auth.jwt_handler import create_access_token
-from auth.rate_limiter import MAX_REQUESTS, request_history
+from auth.rate_limiter import (
+    DEFAULT_MAX_REQUESTS,
+    LOGIN_MAX_REQUESTS,
+    request_history,
+)
 from models.users import Role, User
 
 
@@ -66,10 +70,27 @@ def test_signup_rejeita_role_enviada_no_body(client):
 
 def test_rate_limiter_aplica_limite_generico(client):
     request_history.clear()
-    for _ in range(MAX_REQUESTS):
+    for _ in range(DEFAULT_MAX_REQUESTS):
         response = client.get("/openapi.json")
         assert response.status_code == 200
 
     response = client.get("/openapi.json")
+
+    assert response.status_code == 429
+
+
+def test_rate_limiter_aplica_limite_menor_ao_login(client):
+    request_history.clear()
+    for _ in range(LOGIN_MAX_REQUESTS):
+        response = client.post("/signin", data={
+            "username": "ataque@clinica.com",
+            "password": "senha-incorreta",
+        })
+        assert response.status_code == 401
+
+    response = client.post("/signin", data={
+        "username": "ataque@clinica.com",
+        "password": "senha-incorreta",
+    })
 
     assert response.status_code == 429
