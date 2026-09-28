@@ -3,11 +3,47 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from models.users import Role
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/signin")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/signin",
+    scheme_name="UserBearer",
+)
+client_oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/oauth/token",
+    scheme_name="ClientBearer",
+)
 
 
 async def authenticate(token: str = Depends(oauth2_scheme)) -> dict:
-    return verify_access_token(token)
+    user = verify_access_token(token)
+    if user["actor"] != "user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User token required",
+        )
+    return user
+
+
+async def authenticate_client(
+    token: str = Depends(client_oauth2_scheme),
+) -> dict:
+    client = verify_access_token(token)
+    if client["actor"] != "client":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Client token required",
+        )
+    return client
+
+
+async def require_horarios_read(
+    client: dict = Depends(authenticate_client),
+) -> dict:
+    if "horarios:read" not in client["scope"].split():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Scope horarios:read required",
+        )
+    return client
 
 
 async def require_professional(user: dict = Depends(authenticate)) -> dict:
