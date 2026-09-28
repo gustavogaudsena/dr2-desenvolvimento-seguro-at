@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Annotated
 
-from pydantic import ConfigDict, StringConstraints
+from pydantic import ConfigDict, NaiveDatetime, StringConstraints
 from sqlmodel import Field, SQLModel
 import uuid
 
@@ -25,7 +25,7 @@ class ConsultaBase(SQLModel):
 
     paciente: Nome
     medico: Nome
-    data: datetime
+    data: NaiveDatetime
     observacoes: str | None = Field(default=None, max_length=500)
 
 

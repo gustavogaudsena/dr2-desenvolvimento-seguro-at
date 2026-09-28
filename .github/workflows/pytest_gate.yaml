@@ -1,0 +1,26 @@
+name: Pytest Security Gate
+
+on: push
+
+jobs:
+  security_tests:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite:///./ci.db
+      JWT_SECRET: segredo-exclusivo-do-ambiente-de-ci
+      ADMIN_MFA_CODE: "123456"
+    steps:
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v7
+
+      - name: Configurar o Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Executar testes de segurança
+        run: pytest tests/test_auth.py

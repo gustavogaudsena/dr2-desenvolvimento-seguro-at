@@ -1,0 +1,16 @@
+name: SAST Security Gate
+
+on: push
+
+jobs:
+  scan_sast:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v7
+
+      - name: Instalar o Bandit (Scanner SAST para python)
+        run: pip install bandit==1.9.4
+
+      - name: Analisar código-fonte
+        run: bandit -r . -x .venv,tests -lll
