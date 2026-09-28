@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from auth.middleware_jwt import JWTMiddleware
+from auth.rate_limiter import RateLimiterMiddleware
 from routes.consultas import consultas_router
 from routes.agenda import agenda_router
 from routes.integracao import integracao_router
@@ -6,6 +8,8 @@ from routes.users import user_router
 import uvicorn
 
 app = FastAPI()
+app.add_middleware(JWTMiddleware)
+app.add_middleware(RateLimiterMiddleware)
 
 app.include_router(user_router)
 app.include_router(consultas_router)

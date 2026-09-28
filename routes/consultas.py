@@ -1,18 +1,11 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from auth.authenticate import require_professional
+from auth.autorizacao import require_owned_consulta
+from database.consultas import consultas
 from models.consultas import Consulta, ConsultaCreate, RespostaConsulta, RespostaConsultas
 import uuid
 consultas_router = APIRouter(prefix="/consultas")
-consultas = dict()  # {id: consulta}
-
-
-def get_owned_consulta(consulta_id: uuid.UUID, user: dict) -> Consulta:
-    consulta = consultas.get(consulta_id, None)
-    if consulta is None or consulta.owner != user["sub"]:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="Consulta não encontrada")
-    return consulta
 
 
 @consultas_router.get("/", response_model=RespostaConsultas)
@@ -28,11 +21,8 @@ async def get_consultas(user: dict = Depends(require_professional)):
 @consultas_router.get("/{consulta_id}", status_code=status.HTTP_200_OK,
                       response_model=RespostaConsulta)
 async def get_consulta_by_id(
-    consulta_id: uuid.UUID,
-    user: dict = Depends(require_professional),
+    consulta: Consulta = Depends(require_owned_consulta),
 ):
-    consulta = get_owned_consulta(consulta_id, user)
-
     return {
         "data": consulta
     }
@@ -60,10 +50,8 @@ async def create_consulta(
 async def update_consulta(
     consulta_id: uuid.UUID,
     dados: ConsultaCreate,
-    user: dict = Depends(require_professional),
+    consulta: Consulta = Depends(require_owned_consulta),
 ):
-    consulta = get_owned_consulta(consulta_id, user)
-
     updated_consulta = consulta.model_copy(update=dados.model_dump())
     consultas[consulta_id] = updated_consulta
 
@@ -75,8 +63,6 @@ async def update_consulta(
 @consultas_router.delete("/{consulta_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_consulta(
     consulta_id: uuid.UUID,
-    user: dict = Depends(require_professional),
+    _: Consulta = Depends(require_owned_consulta),
 ):
-    get_owned_consulta(consulta_id, user)
-
     del consultas[consulta_id]

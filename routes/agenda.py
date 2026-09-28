@@ -3,12 +3,17 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from auth.authenticate import authenticate
+from database.consultas import consultas
 from models.users import Role
-from routes.consultas import consultas
 
 agenda_router = APIRouter()
-templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
+templates_path = Path(__file__).parent.parent / "templates"
+templates = Jinja2Templates(env=Environment(
+    loader=FileSystemLoader(templates_path),
+    autoescape=select_autoescape(["html", "xml"]),
+))
 
 
 @agenda_router.get("/agenda", response_class=HTMLResponse)

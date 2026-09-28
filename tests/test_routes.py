@@ -1,6 +1,6 @@
 from datetime import date
 from uuid import UUID, uuid4
-from routes.consultas import consultas
+from database.consultas import consultas
 
 NOVA_CONSULTA = {
     "paciente": "Maria Silva",
@@ -99,20 +99,24 @@ def test_nenhuma_resposta_da_api_expoe_criado_em(client):
         assert "criado_em" not in consulta
 
 
-def test_criado_em_enviado_pelo_cliente_e_ignorado(client):
+def test_criar_consulta_rejeita_campo_extra(client):
     payload = {**NOVA_CONSULTA, "criado_em": "2000-01-01T00:00:00"}
 
-    criada = criar_consulta(client, payload)
+    response = client.post("/consultas/", json=payload)
 
-    assert consultas[UUID(criada["id"])].criado_em.year != 2000
+    assert response.status_code == 422
 
 
-def test_atualizar_consulta_preserva_criado_em(client):
+def test_atualizar_consulta_rejeita_campo_extra(client):
     criada = criar_consulta(client)
     criado_em_original = consultas[UUID(criada["id"])].criado_em
 
-    client.put(f"/consultas/{criada['id']}", json={**NOVA_CONSULTA, "criado_em": "2000-01-01T00:00:00"})
+    response = client.put(
+        f"/consultas/{criada['id']}",
+        json={**NOVA_CONSULTA, "criado_em": "2000-01-01T00:00:00"},
+    )
 
+    assert response.status_code == 422
     assert consultas[UUID(criada["id"])].criado_em == criado_em_original
 
 
@@ -157,13 +161,19 @@ def test_agenda_herda_layout_do_template_base(client):
 def test_agenda_escapa_html_de_paciente_e_observacoes(client):
     criar_consulta(client, {
         **NOVA_CONSULTA,
-        "paciente": "<script>alert(1)</script>",
         "observacoes": "<img src=x onerror=alert(2)>",
     })
 
     html = client.get("/agenda?data=2026-10-01").text
 
-    assert "<script>alert(1)</script>" not in html
-    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
     assert "<img src=x onerror=alert(2)>" not in html
     assert "&lt;img src=x onerror=alert(2)&gt;" in html
+
+
+def test_criar_consulta_rejeita_nome_fora_da_whitelist(client):
+    response = client.post("/consultas/", json={
+        **NOVA_CONSULTA,
+        "paciente": "<script>alert(1)</script>",
+    })
+
+    assert response.status_code == 422

@@ -13,7 +13,7 @@ user_router = APIRouter(
 )
 
 hash_password = HashPassword()
-MFA_CODE = os.getenv("ADMIN_MFA_CODE", "123456")
+MFA_CODE = os.getenv("ADMIN_MFA_CODE")
 
 users = {
     "medico@clinica.com": User(
@@ -75,6 +75,11 @@ async def sign_user_in(
 
     mfa_verified = False
     if user_exist.mfa_enabled:
+        if MFA_CODE is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="MFA não configurado no servidor.",
+            )
         mfa_verified = (
             mfa_code is not None
             and secrets.compare_digest(mfa_code, MFA_CODE)

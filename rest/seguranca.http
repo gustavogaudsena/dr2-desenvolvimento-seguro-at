@@ -1,0 +1,41 @@
+### Autentica como profissional
+# @name loginSeguranca
+POST http://localhost:8080/signin HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+username=medico@clinica.com&password=medico123
+
+### Campo extra criado_em deve retornar 422
+POST http://localhost:8080/consultas/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{loginSeguranca.response.body.$.access_token}}
+
+{
+    "paciente": "Maria Silva",
+    "medico": "Dr. João Souza",
+    "data": "2026-10-01T14:30:00",
+    "criado_em": "2000-01-01T00:00:00"
+}
+
+### Nome fora da whitelist deve retornar 422
+POST http://localhost:8080/consultas/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{loginSeguranca.response.body.$.access_token}}
+
+{
+    "paciente": "<script>alert(1)</script>",
+    "medico": "Dr. João Souza",
+    "data": "2026-10-01T14:30:00"
+}
+
+### Obtém o token do laboratório
+# @name loginLaboratorioSeguranca
+POST http://localhost:8080/oauth/token HTTP/1.1
+Authorization: Basic bGFib3JhdG9yaW8tcGFyY2Vpcm86bGFib3JhdG9yaW8xMjM=
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&scope=horarios:read
+
+### Endpoint adicional: o parâmetro medico também usa a whitelist.
+GET http://localhost:8080/laboratorio/horarios-disponiveis?data=2026-10-01&medico=%3Cscript%3E HTTP/1.1
+Authorization: Bearer {{loginLaboratorioSeguranca.response.body.$.access_token}}

@@ -1,12 +1,15 @@
 from datetime import date
+from typing import Annotated
 
 from auth.authenticate import require_horarios_read
 from auth.hash_password import HashPassword
 from auth.jwt_handler import ACCESS_TOKEN_EXPIRE_MINUTES, create_client_access_token
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from database.consultas import consultas
 from models.clients import ClientTokenResponse, OAuthClient
-from routes.consultas import consultas
+
+NOME_PATTERN = r"^[A-Za-zÀ-ÖØ-öø-ÿ .'-]+$"
 
 integracao_router = APIRouter(tags=["Integração externa"])
 basic_auth = HTTPBasic()
@@ -64,7 +67,10 @@ async def create_client_token(
 @integracao_router.get("/laboratorio/horarios-disponiveis")
 async def get_horarios_disponiveis(
     data: date,
-    medico: str,
+    medico: Annotated[
+        str,
+        Query(min_length=2, max_length=100, pattern=NOME_PATTERN),
+    ],
     _: dict = Depends(require_horarios_read),
 ):
     horarios_ocupados = {
