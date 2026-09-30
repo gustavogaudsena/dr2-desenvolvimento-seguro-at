@@ -1,11 +1,16 @@
+# @apiUrl = http://localhost:8080
+# @apiUrl = http://host.docker.internal:8080
+@apiUrl = https://host.docker.internal:8443
+
+
 ### Solicita token M2M pelo fluxo Client Credentials
 # @name loginLaboratorio
-POST http://localhost:8080/oauth/token HTTP/1.1
+POST {{apiUrl}}/oauth/token HTTP/1.1
 Authorization: Basic bGFib3JhdG9yaW8tcGFyY2Vpcm86bGFib3JhdG9yaW8xMjM=
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials&scope=horarios:read
 
 ### Consulta somente os horários disponíveis
-GET http://localhost:8080/laboratorio/horarios-disponiveis?data=2026-10-01&medico=Dr.%20João%20Souza HTTP/1.1
+GET {{apiUrl}}/laboratorio/horarios-disponiveis?data=2026-10-01&medico=Dr.%20João%20Souza HTTP/1.1
 Authorization: Bearer {{loginLaboratorio.response.body.$.access_token}}

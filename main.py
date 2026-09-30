@@ -28,7 +28,12 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="API de Agendamento de Consultas",
+    description="API segura para gerenciamento de consultas médicas.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 app.add_middleware(JWTMiddleware)
 app.add_middleware(RateLimiterMiddleware)
 app.add_middleware(

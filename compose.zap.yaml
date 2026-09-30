@@ -1,0 +1,15 @@
+services:
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    user: zap
+    command: zap-webswing.sh
+    stdin_open: true
+    ports:
+      - "127.0.0.1:8081:8080"
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - zap_work:/zap/wrk
+      - ./reports:/zap/reports
+
+volumes:
+  zap_work:

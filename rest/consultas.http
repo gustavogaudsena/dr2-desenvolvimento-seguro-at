@@ -1,18 +1,22 @@
+# @apiUrl = http://localhost:8080
+# @apiUrl = http://host.docker.internal:8080
+@apiUrl = https://host.docker.internal:8443
+
 ###
 # Autentica como profissional
 # @name login
-POST http://localhost:8080/signin HTTP/1.1
+POST {{apiUrl}}/signin HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
 username=medico@clinica.com&password=medico123
 
 ###
-GET http://localhost:8080/consultas HTTP/1.1
+GET {{apiUrl}}/consultas HTTP/1.1
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ### Cria uma consulta (o id é gerado pelo servidor)
 # @name criarConsulta
-POST http://localhost:8080/consultas/ HTTP/1.1
+POST {{apiUrl}}/consultas/ HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.$.access_token}}
 
@@ -24,11 +28,11 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 }
 
 ### Busca a consulta criada acima
-GET http://localhost:8080/consultas/{{criarConsulta.response.body.$.data.id}} HTTP/1.1
+GET {{apiUrl}}/consultas/{{criarConsulta.response.body.$.data.id}} HTTP/1.1
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ### Atualiza a consulta criada acima
-PUT http://localhost:8080/consultas/{{criarConsulta.response.body.$.data.id}} HTTP/1.1
+PUT {{apiUrl}}/consultas/{{criarConsulta.response.body.$.data.id}} HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.$.access_token}}
 
@@ -40,15 +44,15 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 }
 
 ### Remove a consulta criada acima
-DELETE http://localhost:8080/consultas/{{criarConsulta.response.body.$.data.id}} HTTP/1.1
+DELETE {{apiUrl}}/consultas/{{criarConsulta.response.body.$.data.id}} HTTP/1.1
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ### Consulta inexistente (espera 404)
-GET http://localhost:8080/consultas/00000000-0000-0000-0000-000000000000 HTTP/1.1
+GET {{apiUrl}}/consultas/00000000-0000-0000-0000-000000000000 HTTP/1.1
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ### Campos obrigatórios faltando (espera 422)
-POST http://localhost:8080/consultas/ HTTP/1.1
+POST {{apiUrl}}/consultas/ HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.$.access_token}}
 
@@ -57,11 +61,11 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 }
 
 ### Agenda do dia de hoje (página HTML da recepção)
-GET http://localhost:8080/agenda HTTP/1.1
+GET {{apiUrl}}/agenda HTTP/1.1
 Authorization: Bearer {{login.response.body.$.access_token}}
 
 ### Consulta com HTML malicioso, para testar o escape (XSS)
-POST http://localhost:8080/consultas/ HTTP/1.1
+POST {{apiUrl}}/consultas/ HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.$.access_token}}
 
@@ -73,5 +77,5 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 }
 
 ### Agenda de 01/10/2026: o <script> acima deve aparecer como &lt;script&gt;
-GET http://localhost:8080/agenda?data=2026-10-01 HTTP/1.1
+GET {{apiUrl}}/agenda?data=2026-10-01 HTTP/1.1
 Authorization: Bearer {{login.response.body.$.access_token}}

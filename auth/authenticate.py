@@ -1,13 +1,20 @@
-from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, Request, Security, status
+from fastapi.security import OAuth2, OAuth2PasswordBearer
 from models.users import Role
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/signin",
     scheme_name="UserBearer",
 )
-client_oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/oauth/token",
+client_oauth2_scheme = OAuth2(
+    flows={
+        "clientCredentials": {
+            "tokenUrl": "/oauth/token",
+            "scopes": {
+                "horarios:read": "Consultar horários disponíveis",
+            },
+        },
+    },
     scheme_name="ClientBearer",
 )
 
@@ -33,7 +40,7 @@ async def authenticate(
 
 async def authenticate_client(
     request: Request,
-    _: str = Depends(client_oauth2_scheme),
+    _: str = Security(client_oauth2_scheme),
 ) -> dict:
     client = getattr(request.state, "token_data", None)
     if client is None:
@@ -51,7 +58,10 @@ async def authenticate_client(
 
 
 async def require_horarios_read(
-    client: dict = Depends(authenticate_client),
+    client: dict = Security(
+        authenticate_client,
+        scopes=["horarios:read"],
+    ),
 ) -> dict:
     if "horarios:read" not in client["scope"].split():
         raise HTTPException(
